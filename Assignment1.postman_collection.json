@@ -1,0 +1,928 @@
+{
+	"info": {
+		"_postman_id": "2ab379b1-857f-43e8-9bb7-be5c937d08b1",
+		"name": "Assignment1",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "CREATE USER",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var user_name = \"morpheus\"",
+							"var user_job =  \"leader\"",
+							"var name_1 = \"sadia\"",
+							"",
+							"pm.environment.set(\"user_name\", user_name);",
+							"pm.environment.set(\"user_job\", user_job);",
+							"pm.environment.set(\"name_user\", name_1);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const jsonData = pm.response.json();",
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Person name is same \", function () {",
+							"    pm.expect(jsonData.name).to.eql(pm.environment.get(\"name_user\"));",
+							"});",
+							" ",
+							"pm.test(\"Person job is same\", function () {",
+							"    pm.expect(jsonData.job).to.eql(pm.environment.get(\"user_job\"));",
+							"});",
+							" "
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"{{user_name}}\",\n    \"job\": \"{{user_job}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{URL}}/api/users",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"api",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "LIST USERS Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"try {",
+							"",
+							"    var jsonData = pm.response.json();",
+							"    var testResultCount = 0;",
+							"    var totalAssertion = 12;",
+							"    var exception = \"None\";",
+							"    value1 = jsonData.data[1].first_name",
+							"    pm.environment.set(\"username\", value1);",
+							"    value2 = jsonData.data[3].id",
+							"    pm.environment.set(\"user_id\", value2);",
+							"    value3 = jsonData.page",
+							"    pm.environment.set(\"page_num\", value3);",
+							"    value4 = jsonData.per_page",
+							"    pm.environment.set(\"per_page\", value4);",
+							"       ",
+							"        pm.test(\"Status code is 200\", function() {",
+							"        pm.response.to.have.status(200);",
+							"            testResultCount++;",
+							"        });",
+							"",
+							"    pm.test(\"Status text is OK\", function() {",
+							"        pm.response.to.have.status(\"OK\");",
+							"        testResultCount++;",
+							"    });",
+							"",
+							"    pm.test(\"Check for valid response body\", function() {",
+							"        pm.response.to.be.withBody;",
+							"        pm.response.to.be.json;",
+							"        testResultCount++;",
+							"    });",
+							"",
+							"    pm.test(\" Page number Verification \", function () {",
+							"    //var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.page).to.eql(pm.environment.get(\"page_num\"));",
+							"        testResultCount++;",
+							"    });",
+							"",
+							"    for(var i=1 ; i<=(pm.environment.get(\"per_page\")) ; i++){",
+							"    pm.test('Data is not null at index ' +  (i-1) ), function () {",
+							"    pm.expect(jsonData.data[i]).is.not.null;",
+							"        testResultCount++;",
+							"    ",
+							"    };",
+							"    };",
+							"",
+							"",
+							"    pm.globals.set(\"auth_token\", 'Bearer ' + jsonData.data.token);",
+							"    pm.environment.set(\"username\", jsonData.data.first_name + ' ' + jsonData.data.last_name);",
+							"",
+							"} catch (e) {",
+							"    console.log(e.stack); //log the stack trace to console",
+							"    exception = e.stack;",
+							"}",
+							"",
+							"// Code",
+							"   var testRunId = pm.globals.get(\"getTestRunId\");",
+							"  var apiData =\"URL:\\n\" + pm.request.url + \"\\n\\nHeaders:\\n\" + pm.request.headers + \"\\n\\nBody:\\n\" + pm.request.body + \"\\n\\nResponse:\\n\" + pm.response.text() + \"\\n\\nException:\\n\" + exception;",
+							"    var requestContent = \"API-Automation-Test-\" + testRunId + \"-\" + pm.info.requestName + \" | got failed due to some assertion or exception\";",
+							"    ",
+							"    const jiraIssueCreation = eval(globals.jiraStatusObject);",
+							"    jiraIssueCreation.reuseableFunction(apiData, requestContent);",
+							"//Status Update in TestRail",
+							"",
+							"if (pm.globals.get('testRailIntegration') ==true) {",
+							"const testRailStatusObject = eval(globals.testRailStatusUpdate);",
+							"testRailStatusObject.reuseableFunction(utils.testCaseResult(testResultCount, totalAssertion), pm.globals.get('getTestRunId'), pm.globals.get(\"testrail_testcase_id\"),apiData);",
+							"}",
+							"//Create Bug in Jira",
+							"if ((totalAssertion != testResultCount) &&  pm.globals.get('jiraIntegration') ==true) {",
+							"   const jiraIssueCreation = eval(globals.jiraStatusObject);",
+							"    jiraIssueCreation.reuseableFunction(apiData, requestContent);",
+							"}",
+							"",
+							"",
+							"",
+							"",
+							"",
+							"",
+							"",
+							"",
+							"",
+							"",
+							"",
+							"",
+							"",
+							"",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.globals.set(\"testrail_testcase_id\",\"250211\"); //sets testrail's test case id ",
+							"console.log(pm.globals.get(\"testrail_testcase_id\"));"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{URL}}/api/users/?page=2",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"api",
+						"users",
+						""
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create User Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/*try {",
+							"",
+							"    var jsonData = pm.response.json();",
+							"    var testResultCount = 0;",
+							"    var totalAssertion = 5;",
+							"    var exception = \"None\";",
+							"       ",
+							"        pm.test(\"Status code is 201\", function() {",
+							"        pm.response.to.have.status(201);",
+							"            testResultCount++;",
+							"        });",
+							"",
+							"    pm.test(\"Status text is Created\", function() {",
+							"        pm.response.to.have.status(\"Created\");",
+							"        testResultCount++;",
+							"    });",
+							"",
+							"    pm.test(\"Check for valid response body\", function() {",
+							"        pm.response.to.be.withBody;",
+							"        pm.response.to.be.json;",
+							"        testResultCount++;",
+							"    });",
+							"",
+							"    pm.test(\"Person name is same \", function () {",
+							"    pm.expect(jsonData.name).to.eql(pm.environment.get(\"user_name\"));",
+							"        testResultCount++;",
+							"    });",
+							"",
+							"    pm.test(\"Person job is same\", function () {",
+							"    pm.expect(jsonData.job).to.eql(pm.environment.get(\"user_job\"));",
+							"        testResultCount++;",
+							"});",
+							"",
+							"    pm.globals.set(\"auth_token\", 'Bearer ' + jsonData.data.token);",
+							"    pm.environment.set(\"username\", jsonData.data.first_name + ' ' + jsonData.data.last_name);",
+							"",
+							"} catch (e) {",
+							"    console.log(e.stack); //log the stack trace to console",
+							"    exception = e.stack;",
+							"}",
+							"",
+							"// Code",
+							"   var testRunId = pm.globals.get(\"getTestRunId\");",
+							"  var apiData =\"URL:\\n\" + pm.request.url + \"\\n\\nHeaders:\\n\" + pm.request.headers + \"\\n\\nBody:\\n\" + pm.request.body + \"\\n\\nResponse:\\n\" + pm.response.text() + \"\\n\\nException:\\n\" + exception;",
+							"    var requestContent = \"API-Automation-Test-\" + testRunId + \"-\" + pm.info.requestName + \" | got failed due to some assertion or exception\";",
+							"    ",
+							"    const jiraIssueCreation = eval(globals.jiraStatusObject);",
+							"    jiraIssueCreation.reuseableFunction(apiData, requestContent);",
+							"//Status Update in TestRail",
+							"",
+							"if (pm.globals.get('testRailIntegration') ==true) {",
+							"const testRailStatusObject = eval(globals.testRailStatusUpdate);",
+							"testRailStatusObject.reuseableFunction(utils.testCaseResult(testResultCount, totalAssertion), pm.globals.get('getTestRunId'), pm.globals.get(\"testrail_testcase_id\"),apiData);",
+							"}",
+							"//Create Bug in Jira",
+							"if ((totalAssertion != testResultCount) &&  pm.globals.get('jiraIntegration') ==true) {",
+							"   const jiraIssueCreation = eval(globals.jiraStatusObject);",
+							"    jiraIssueCreation.reuseableFunction(apiData, requestContent);",
+							"} */",
+							"",
+							"",
+							"",
+							"",
+							"",
+							"",
+							"",
+							"",
+							"//const jsonData = pm.response.json();",
+							"",
+							"try {",
+							"",
+							"    var jsonData = pm.response.json();",
+							"    var testResultCount = 0;",
+							"    var totalAssertion = 5;",
+							"    var exception = \"None\";",
+							"    pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"    });",
+							"    console.log(jsonData.name);",
+							"    pm.test(\"Person name is same \", function () {",
+							"    pm.expect(jsonData.name).to.eql(pm.environment.get(\"user_name\"));",
+							"    });",
+							" ",
+							"    pm.test(\"Person job is same\", function () {",
+							"    pm.expect(jsonData.job).to.eql(pm.environment.get(\"user_job\"));",
+							"    });",
+							"       ",
+							"        pm.test(\"Status code is 201\", function() {",
+							"        pm.response.to.have.status(201);",
+							"            testResultCount++;",
+							"        });",
+							"",
+							"    pm.test(\"Status text is OK\", function() {",
+							"        pm.response.to.have.status(\"Created\");",
+							"        testResultCount++;",
+							"    });",
+							"",
+							"    pm.test(\"Check for valid response body\", function() {",
+							"        pm.response.to.be.withBody;",
+							"        pm.response.to.be.json;",
+							"        testResultCount++;",
+							"    });",
+							"",
+							"    pm.test(\"Verify success  message\", function() {",
+							"        pm.expect(jsonData.job).to.eql(\"leader\");",
+							"        testResultCount++;    ",
+							"    });",
+							"",
+							"    pm.test(\"Verify data is present\", function() {",
+							"        pm.expect(jsonData.data).to.not.eql(\"{}\")",
+							"        testResultCount++;",
+							"    });",
+							"",
+							"    pm.globals.set(\"auth_token\", 'Bearer ' + jsonData.data.token);",
+							"    pm.environment.set(\"username\", jsonData.data.first_name + ' ' + jsonData.data.last_name);",
+							"",
+							"} catch (e) {",
+							"    console.log(e.stack); //log the stack trace to console",
+							"    exception = e.stack;",
+							"}",
+							"",
+							"// Code",
+							"   var testRunId = pm.globals.get(\"getTestRunId\");",
+							"  var apiData =\"URL:\\n\" + pm.request.url + \"\\n\\nHeaders:\\n\" + pm.request.headers + \"\\n\\nBody:\\n\" + pm.request.body + \"\\n\\nResponse:\\n\" + pm.response.text() + \"\\n\\nException:\\n\" + exception;",
+							"    var requestContent = \"API-Automation-Test-\" + testRunId + \"-\" + pm.info.requestName + \" | got failed due to some assertion or exception\";",
+							"    ",
+							"    const jiraIssueCreation = eval(globals.jiraStatusObject);",
+							"    jiraIssueCreation.reuseableFunction(apiData, requestContent);",
+							"//Status Update in TestRail",
+							"",
+							"if (pm.globals.get('testRailIntegration') ==true) {",
+							"const testRailStatusObject = eval(globals.testRailStatusUpdate);",
+							"testRailStatusObject.reuseableFunction(utils.testCaseResult(testResultCount, totalAssertion), pm.globals.get('getTestRunId'), pm.globals.get(\"testrail_testcase_id\"),apiData);",
+							"}",
+							"//Create Bug in Jira",
+							"if ((totalAssertion != testResultCount) &&  pm.globals.get('jiraIntegration') ==true) {",
+							"   const jiraIssueCreation = eval(globals.jiraStatusObject);",
+							"    jiraIssueCreation.reuseableFunction(apiData, requestContent);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"/*pm.globals.set(\"testrail_testcase_id\",\"250206\"); //sets testrail's test case id ",
+							"console.log(pm.globals.get(\"testrail_testcase_id\")); ",
+							"",
+							"switch(postman.getEnvironmentVariable(\"EnvironmentType\")){",
+							"case \"Staging\":",
+							"var user_name = \"morpheus\"",
+							"var user_job =  \"leader\"",
+							"var name_1 = \"sadia\"",
+							"pm.environment.set(\"user_name\", user_name);",
+							"pm.environment.set(\"user_job\", user_job);",
+							"pm.environment.set(\"name_user\", name_1);break;",
+							"",
+							"case \"Production\":",
+							"var user_name = \"morpheus\"",
+							"var user_job =  \"leader\"",
+							"var name_1 = \"sadia\"",
+							"pm.environment.set(\"user_name\", user_name);",
+							"pm.environment.set(\"user_job\", user_job);",
+							"pm.environment.set(\"name_user\", name_1);",
+							"break;",
+							"} */",
+							"",
+							"pm.globals.set(\"testrail_testcase_id\",\"250206\"); //sets testrail's test case id ",
+							"console.log(pm.globals.get(\"testrail_testcase_id\")); ",
+							"",
+							"switch(postman.getEnvironmentVariable(\"EnvironmentType\")){",
+							"case \"Staging\":",
+							"var user_name = \"morpheus\"",
+							"var user_job =  \"leader\"",
+							"var name_1 = \"morpheus\"",
+							"",
+							"pm.environment.set(\"user_name\", user_name);",
+							"pm.environment.set(\"user_job\", user_job);",
+							"pm.environment.set(\"name_user\", name_1);",
+							"break;",
+							"",
+							"case \"Production\":",
+							"var user_name = \"morpheus\"",
+							"var user_job =  \"leader\"",
+							"var name_1 = \"morpheus\"",
+							"",
+							"pm.environment.set(\"user_name\", user_name);",
+							"pm.environment.set(\"user_job\", user_job);",
+							"pm.environment.set(\"name_user\", name_1);",
+							"break;",
+							"}",
+							"",
+							"",
+							"",
+							"",
+							"",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "Sadia@1234",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "sadia.razzaq@venturedive.com",
+							"type": "string"
+						},
+						{
+							"key": "showPassword",
+							"value": false,
+							"type": "boolean"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"{{user_name}}\",\n    \"job\": \"{{user_job}}\"\n}"
+				},
+				"url": {
+					"raw": "{{URL}}/api/users",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"api",
+						"users"
+					]
+				},
+				"description": "Test"
+			},
+			"response": []
+		},
+		{
+			"name": "LIST USERS Copy 2",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"",
+							"jsondata = JSON.parse(responseBody)",
+							"value1 = jsondata.data[1].first_name",
+							"pm.environment.set(\"username\", value1);",
+							"value2 = jsondata.data[3].id",
+							"pm.environment.set(\"user_id\", value2);",
+							"value3 = jsondata.page",
+							"pm.environment.set(\"page_num\", value3);",
+							"value4 = jsondata.per_page",
+							"pm.environment.set(\"per_page\", value4);",
+							"",
+							"",
+							"pm.test(\" Page number Verification \", function () {",
+							"    //var jsonData = pm.response.json();",
+							"    pm.expect(jsondata.page).to.eql(pm.environment.get(\"page_num\"));",
+							"});",
+							"",
+							"",
+							"for(var i=1 ; i<=(pm.environment.get(\"per_page\")) ; i++){",
+							"pm.test('Data is not null at index ' +  (i-1) ), function () {",
+							"    pm.expect(jsondata.data[i]).is.not.null;",
+							"    ",
+							"};",
+							"};",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{URL}}/api/users/?page=2",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"api",
+						"users",
+						""
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "UPDATE",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"jsondata = JSON.parse(responseBody)",
+							"job = jsondata.job",
+							"pm.environment.set(\"userjob\", job);",
+							"",
+							"pm.test(\"Verify name and job\", function () {",
+							"    //var jsonData = pm.response.json();",
+							"    pm.expect(jsondata.name).to.eql( pm.environment.get(\"username\"));",
+							"    pm.expect(jsondata.job).to.eql(pm.environment.get(\"userjob\"));",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"{{username}}\",\n    \"job\": \"zion resident\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{URL}}/api/users/{{user_id}}",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"api",
+						"users",
+						"{{user_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PATCH",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const jsonData = pm.response.json();",
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Name updated\", function () {",
+							"    pm.expect(jsonData.name).to.eql(pm.environment.get(\"name\"));",
+							"});",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var name = \"Janet\"",
+							"pm.environment.set(\"name\", name);",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"{{name}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{URL}}/api/users/{{user_id}}",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"api",
+						"users",
+						"{{user_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET SINGLE USER",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"ID is same as the user id \", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.data.id).to.eql(pm.environment.get(\"user_id\"));",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{URL}}/api/users/{{user_id}}",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"api",
+						"users",
+						"{{user_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Random user 1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const jsonData = pm.response.json();",
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Person name is same \", function () {",
+							"    pm.expect(jsonData.name).to.eql(pm.environment.get(\"user_name\"));",
+							"});",
+							" ",
+							"pm.test(\"Person job is same\", function () {",
+							"    pm.expect(jsonData.job).to.eql(pm.environment.get(\"user_job\"));",
+							"});",
+							" "
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"var user_name = \"morpheus\" + pm.variables.replaceIn('{{$randomInt}}');",
+							"var user_job =  \"leader\" + pm.variables.replaceIn('{{$randomInt}}');",
+							"",
+							"pm.environment.set(\"user_name\", user_name);",
+							"pm.environment.set(\"user_job\", user_job);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"{{user_name}}\",\n    \"job\": \"{{user_job}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{URL}}/api/users",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"api",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DELETE",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{URL}}/api/users/{{user_id}}",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"api",
+						"users",
+						"{{user_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "LOGIN UNSUCCESSFUL",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"{{email1}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{URL}}/api/login",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"api",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "LOGIN UNSUCCESSFUL Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"{{email1}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{URL}}/api/login",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"api",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "REGISTER UNSUCCESSFUL",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test(\"Data is not null\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).is.not.null;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\": \"sydney@fife\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{URL}}/api/register",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"api",
+						"register"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
